@@ -71,7 +71,8 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
           <Hamster
             cheek={isNew ? cheekLevel(total) : 1}
             mood={failed ? "normal" : "happy"}
-            size={64}
+            seed
+            size={76}
           />
           <div className="flex flex-col">
             <span className="font-display text-base">{reaction.title}</span>

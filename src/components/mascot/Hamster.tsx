@@ -83,8 +83,8 @@ export function Hamster({ cheek = 1, mood = "normal", seed = false, size = 96, c
         {/* 얼굴 */}
         {mood === "happy" ? (
           <>
-            <path d={`M40 ${eyeY + 1} q7 -9 14 0`} stroke={INK} strokeWidth={4} fill="none" strokeLinecap="round" />
-            <path d={`M66 ${eyeY + 1} q7 -9 14 0`} stroke={INK} strokeWidth={4} fill="none" strokeLinecap="round" />
+            <path d={`M42 ${eyeY} q5 -7 10 0`} stroke={INK} strokeWidth={3.5} fill="none" strokeLinecap="round" />
+            <path d={`M68 ${eyeY} q5 -7 10 0`} stroke={INK} strokeWidth={3.5} fill="none" strokeLinecap="round" />
           </>
         ) : (
           <>
@@ -96,7 +96,7 @@ export function Hamster({ cheek = 1, mood = "normal", seed = false, size = 96, c
         )}
         <ellipse cx={60} cy={full ? 69 : 72} rx={3} ry={2.2} fill="#D9707F" />
         {mood === "happy" ? (
-          <path d="M54 76 q6 8 12 0 Z" fill="#E57A8E" stroke={INK} strokeWidth={1.8} strokeLinejoin="round" />
+          <path d="M56 76 q4 6 8 0 Z" fill="#E57A8E" stroke={INK} strokeWidth={1.6} strokeLinejoin="round" />
         ) : full ? (
           <ellipse cx={60} cy={75} rx={2.8} ry={2.2} fill={INK} />
         ) : (
