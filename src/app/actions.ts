@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import { fetchPosting, parseJobPosting } from "@/lib/parse-job";
 import { STAGES, type StageKey } from "@/lib/types";
+import { detectChannel } from "@/lib/channel";
 
 export type AddState = { error?: string } | null;
 
@@ -27,7 +28,7 @@ export async function addApplication(_prev: AddState, formData: FormData): Promi
 
     const { data, error } = await supabase
       .from("applications")
-      .insert({ ...job, source_url: url || null, raw_text: text.slice(0, 20_000) })
+      .insert({ ...job, source_url: url || null, channel: url ? detectChannel(url) : "기타", raw_text: text.slice(0, 20_000) })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
@@ -140,4 +141,13 @@ export async function reanalyze(id: string) {
 
   revalidatePath(`/applications/${id}`);
   redirect(ok ? `/applications/${id}?reok=1` : `/applications/${id}?reerr=1`);
+}
+
+/** 지원 경로 직접 바꾸기 */
+export async function setChannel(id: string, channel: string) {
+  const value = channel.trim().slice(0, 20);
+  if (!value) return;
+  const { supabase } = await getUser();
+  await supabase.from("applications").update({ channel: value }).eq("id", id);
+  revalidatePath(`/applications/${id}`);
 }

@@ -4,6 +4,8 @@ import { Hamster } from "@/components/mascot/Hamster";
 import { StatusChip } from "@/components/StatusChip";
 import { PendingButton } from "@/components/PendingButton";
 import { RefreshButton } from "@/components/RefreshButton";
+import { ChannelSelect } from "@/components/ChannelSelect";
+import { detectChannel } from "@/lib/channel";
 import { getUser } from "@/lib/supabase/server";
 import { DEFAULT_PROFILE, getMyProfile, josa } from "@/lib/social";
 import { cheekLevel } from "@/lib/progress";
@@ -175,9 +177,8 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
             label="마감일"
             value={app.deadline ? `${app.deadline}${d !== null && d >= 0 ? ` (D-${d})` : ""}` : "상시/미기재"}
           />
-          <div className="col-span-2">
-            <Field label="급여" value={app.salary ?? "공고에 없음"} />
-          </div>
+          <Field label="급여" value={app.salary ?? "공고에 없음"} />
+          <ChannelSelect id={app.id} value={app.channel ?? detectChannel(app.source_url)} />
         </div>
         {app.summary && <p className="text-[13px] leading-relaxed">{app.summary}</p>}
         <List title="주요 업무" items={app.duties ?? []} />

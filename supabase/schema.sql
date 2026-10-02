@@ -16,6 +16,7 @@ create table if not exists public.applications (
   employment_type text,   -- 예: "정규직"
   location text,
   salary text,             -- 급여 조건
+  channel text,            -- 지원 경로 (사람인, 원티드 ...)
   deadline date,
   duties text[] not null default '{}',     -- 주요 업무 / 담당 업무
   requirements text[] not null default '{}',
