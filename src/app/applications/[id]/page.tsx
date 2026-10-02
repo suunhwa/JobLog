@@ -221,6 +221,14 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
         {app.process.length > 0 && (
           <p className="text-xs text-muted">전형 절차: {app.process.join(" → ")}</p>
         )}
+        {app.raw_text && (
+          <details className="text-xs text-muted">
+            <summary className="cursor-pointer underline underline-offset-2">AI가 읽은 공고 원문 보기</summary>
+            <p className="mt-2 max-h-60 overflow-y-auto whitespace-pre-line rounded-xl bg-bg p-3 leading-relaxed">
+              {app.raw_text.slice(0, 4000)}
+            </p>
+          </details>
+        )}
         {app.source_url && (
           <a href={app.source_url} target="_blank" rel="noreferrer" className="text-sm text-info underline underline-offset-2">
             원문 공고 보기

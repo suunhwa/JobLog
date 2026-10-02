@@ -38,6 +38,7 @@ export type Application = {
   preferred: string[];
   process: string[];
   summary: string | null;
+  raw_text?: string | null;
   stage: StageKey;
   status: Status;
   memo: string;

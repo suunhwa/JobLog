@@ -41,7 +41,7 @@ export type Posting = { text: string; images: PostingImage[] };
 /** HTML → 읽을 수 있는 텍스트 */
 function htmlToText(html: string) {
   return html
-    .replace(/<(script|style|noscript|svg|iframe)[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<(script|style|noscript|svg|iframe|header|nav|footer|aside|form)[\s\S]*?<\/\1>/gi, " ")
     .replace(/<br\s*\/?>(?!\n)/gi, "\n")
     .replace(/<\/(p|div|li|tr|h[1-6]|section|article|dd|dt)>/gi, "\n")
     .replace(/<[^>]+>/g, " ")
@@ -140,24 +140,32 @@ async function fetchViaJina(url: string) {
  * 3) JINA_API_KEY 가 있으면 Jina Reader 도 시도
  */
 export async function fetchPosting(url: string): Promise<Posting> {
-  const parts: string[] = [];
-  const pages: { html: string; base: string }[] = [];
   let lastError: unknown = null;
+  let mainHtml = "";
+  try {
+    mainHtml = await getHtml(url);
+  } catch (e) {
+    lastError = e;
+  }
 
-  for (const target of [url, ...detailUrls(url)]) {
+  // 사이트별 "진짜 본문" 페이지 (사람인 iframe 등)
+  let detail: { html: string; base: string } | null = null;
+  for (const target of detailUrls(url)) {
     try {
-      const html = await getHtml(target, url);
-      pages.push({ html, base: target });
-      const title = metaContent(html, "og:title");
-      const desc = metaContent(html, "og:description");
-      if (title || desc) parts.push([title, desc].filter(Boolean).join("\n"));
-      parts.push(htmlToText(html));
+      detail = { html: await getHtml(target, url), base: target };
+      break;
     } catch (e) {
       lastError = e;
     }
   }
 
-  let text = parts.join("\n\n").trim();
+  const title = mainHtml ? metaContent(mainHtml, "og:title") : "";
+  const desc = mainHtml ? metaContent(mainHtml, "og:description") : "";
+  const head = [title, desc].filter(Boolean).join("\n");
+
+  // 본문 페이지가 있으면 그것만 (메인 페이지엔 추천 공고 같은 잡음이 많음)
+  const bodyText = detail ? htmlToText(detail.html) : mainHtml ? htmlToText(mainHtml) : "";
+  let text = [head, bodyText].filter(Boolean).join("\n\n").trim();
 
   if (text.length < 300 && process.env.JINA_API_KEY) {
     try {
@@ -167,11 +175,11 @@ export async function fetchPosting(url: string): Promise<Posting> {
     }
   }
 
-  // 글자가 적으면 이미지 공고로 보고 이미지도 같이 보냄
+  // 본문 글자가 적으면 이미지 공고 → 본문 이미지를 AI에게 같이 보냄
   let images: PostingImage[] = [];
-  if (text.length < 800 && pages.length > 0) {
-    const detail = pages[pages.length - 1];
-    const urls = imageUrls(detail.html, detail.base);
+  const source = detail ?? (mainHtml ? { html: mainHtml, base: url } : null);
+  if (source && bodyText.length < 1500) {
+    const urls = imageUrls(source.html, source.base);
     images = (await Promise.all(urls.map((u) => downloadImage(u, url)))).filter(
       (x): x is PostingImage => x !== null,
     );
