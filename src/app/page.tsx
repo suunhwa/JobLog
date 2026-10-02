@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Hamster } from "@/components/mascot/Hamster";
 import { BottomNav } from "@/components/BottomNav";
 import { StatusChip } from "@/components/StatusChip";
+import { StatCards } from "@/components/StatCards";
 import { getUser } from "@/lib/supabase/server";
 import { cheekMessage, progressInfo } from "@/lib/progress";
 import { daysLeft, stageIndex, type Application } from "@/lib/types";
@@ -68,11 +69,7 @@ export default async function Home() {
 
         <AddForm />
 
-        <section className="grid grid-cols-3 gap-2">
-          <Stat value={applied} label="지원" tone="text-accent-ink" border="border-soft" />
-          <Stat value={docPassed} label="서류 합격" tone="text-good" border="border-good-bg" />
-          <Stat value={interviews} label="면접" tone="text-info" border="border-info-bg" />
-        </section>
+        <StatCards applied={applied} doc={docPassed} interview={interviews} />
 
         {soon.length > 0 && (
           <section className="flex flex-col gap-2">
@@ -121,14 +118,5 @@ export default async function Home() {
       </main>
       <BottomNav active="home" />
     </>
-  );
-}
-
-function Stat({ value, label, tone, border }: { value: number; label: string; tone: string; border: string }) {
-  return (
-    <div className={`flex flex-col items-center gap-0.5 rounded-[20px] border-2 bg-surface p-3 ${border}`}>
-      <span className={`font-display text-2xl ${tone}`}>{value}</span>
-      <span className="text-xs text-muted">{label}</span>
-    </div>
   );
 }
