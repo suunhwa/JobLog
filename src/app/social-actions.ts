@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
-import { GIFTS, type GiftKind } from "@/lib/social";
+import { GIFTS, getMyProfile, type GiftKind } from "@/lib/social";
+import { sendPushToUser } from "@/lib/push";
 
 export type FormState = { ok?: string; error?: string } | null;
 
@@ -50,6 +51,19 @@ export async function sendGift(friendId: string, _prev: FormState, formData: For
   if (!user) redirect("/login");
   const { error } = await supabase.from("gifts").insert({ to_id: friendId, kind, message });
   if (error) return { error: "보내지 못했어요. 이웃이 맞는지 확인해 주세요." };
+
+  // 친구 휴대폰에 방문 알림 (알림 설정이 안 돼 있으면 조용히 건너뜀)
+  try {
+    const me = await getMyProfile(supabase, user.id);
+    await sendPushToUser(friendId, {
+      title: "이웃이 놀러 왔어요!",
+      body: `${me?.nickname ?? "이웃"} 님이 ${GIFTS[kind].verb}${message ? ` · “${message}”` : ""}`,
+      url: "/friends",
+      tag: "visit",
+    });
+  } catch {
+    // 알림 실패해도 선물은 저장됨
+  }
 
   revalidatePath(`/friends/${friendId}`);
   return { ok: `${GIFTS[kind].label} 두고 왔어요!` };

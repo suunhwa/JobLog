@@ -21,6 +21,7 @@
    - SQL Editor 에 `supabase/schema.sql` 내용을 붙여넣고 실행
    - 이어서 `supabase/02_friends.sql` 도 실행 (닉네임·햄스터 이름·이웃·선물)
    - 이어서 `supabase/03_duties.sql` 도 실행 (주요 업무 칸)
+   - 이어서 `supabase/04_push.sql` 도 실행 (휴대폰 알림)
    - Authentication > URL Configuration
      - Site URL: `http://localhost:3000` (배포 후엔 배포 주소)
      - Redirect URLs 에 `http://localhost:3000/auth/callback` 추가

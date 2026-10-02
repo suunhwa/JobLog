@@ -5,6 +5,7 @@ import { FURNITURE, progressInfo } from "@/lib/progress";
 import { getUser } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/social";
 import { ProfileForm } from "@/components/social/ProfileForm";
+import { NotificationToggle } from "@/components/NotificationToggle";
 import { signOut } from "@/app/actions";
 
 export const metadata = { title: "햄스터 집 · 잡로그" };
@@ -35,6 +36,8 @@ export default async function HousePage() {
         </section>
 
         {profile && <ProfileForm nickname={profile.nickname} hamsterName={profile.hamster_name} />}
+
+        <NotificationToggle hamsterName={profile?.hamster_name ?? "햄찌"} />
 
         <section className="flex flex-col gap-2">
           <h2 className="font-display text-base">가구 모음</h2>
