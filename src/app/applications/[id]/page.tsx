@@ -175,6 +175,9 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
             label="마감일"
             value={app.deadline ? `${app.deadline}${d !== null && d >= 0 ? ` (D-${d})` : ""}` : "상시/미기재"}
           />
+          <div className="col-span-2">
+            <Field label="급여" value={app.salary ?? "공고에 없음"} />
+          </div>
         </div>
         {app.summary && <p className="text-[13px] leading-relaxed">{app.summary}</p>}
         <List title="주요 업무" items={app.duties ?? []} />

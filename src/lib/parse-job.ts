@@ -18,6 +18,7 @@ export const ParsedJob = z.object({
   experience: optText,
   employment_type: optText,
   location: optText,
+  salary: optText,
   // 형식이 이상하면 버림
   deadline: optText.transform((v) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null)),
   duties: textList,
@@ -194,6 +195,7 @@ const inputSchema = {
     experience: { type: ["string", "null"], description: '경력 조건. 예: "신입", "경력 3년 이상", "신입·경력"' },
     employment_type: { type: ["string", "null"], description: '고용 형태. 예: "정규직", "계약직", "인턴"' },
     location: { type: ["string", "null"], description: '근무지. 시/구 단위로 짧게. 예: "서울 강남구"' },
+    salary: { type: ["string", "null"], description: '급여 조건. 공고에 적힌 그대로 짧게. 예: "연봉 3,800만원", "면접 후 결정", "회사 내규에 따름"' },
     deadline: {
       type: ["string", "null"],
       description: "지원 마감일 YYYY-MM-DD. 상시채용/채용시 마감이면 null",
@@ -210,6 +212,7 @@ const inputSchema = {
     "experience",
     "employment_type",
     "location",
+    "salary",
     "deadline",
     "duties",
     "requirements",
@@ -282,6 +285,7 @@ async function parseWithGemini(text: string, url?: string, images: PostingImage[
               experience: { ...nullableString, description: '경력 조건. 예: "신입", "경력 3년 이상"' },
               employment_type: { ...nullableString, description: '고용 형태. 예: "정규직", "인턴"' },
               location: { ...nullableString, description: '근무지. 예: "서울 강남구"' },
+              salary: { ...nullableString, description: '급여 조건. 예: "연봉 3,800만원", "면접 후 결정", "회사 내규에 따름"' },
               deadline: { ...nullableString, description: "지원 마감일 YYYY-MM-DD. 상시채용이면 null" },
               duties: { ...stringList, description: "주요 업무 / 담당 업무. 한 줄씩 짧게" },
               requirements: { ...stringList, description: "자격요건. 한 줄씩 짧게" },

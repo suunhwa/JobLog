@@ -27,6 +27,7 @@ export type Application = {
   experience: string | null;
   employment_type: string | null;
   location: string | null;
+  salary: string | null;
   deadline: string | null;
   duties: string[] | null;
   requirements: string[];
