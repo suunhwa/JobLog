@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Hamster } from "@/components/mascot/Hamster";
 import { StatusChip } from "@/components/StatusChip";
+import { PendingButton } from "@/components/PendingButton";
 import { getUser } from "@/lib/supabase/server";
 import { DEFAULT_PROFILE, getMyProfile, josa } from "@/lib/social";
 import { cheekLevel } from "@/lib/progress";
@@ -18,7 +19,7 @@ import {
 
 export default async function ApplicationPage({ params, searchParams }: PageProps<"/applications/[id]">) {
   const { id } = await params;
-  const { new: isNew, reerr } = await searchParams;
+  const { new: isNew, reerr, reok } = await searchParams;
 
   const { supabase, user } = await getUser();
   if (!user) redirect("/login");
@@ -120,22 +121,22 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
 
         {failed ? (
           <form action={reopen.bind(null, app.id, app.stage)}>
-            <button className="h-11 w-full rounded-2xl border-2 border-line font-display text-[15px] text-muted">
+            <PendingButton pendingText="되돌리는 중..." className="h-11 w-full rounded-2xl border-2 border-line font-display text-[15px] text-muted">
               불합격 취소 (다시 진행 중으로)
-            </button>
+            </PendingButton>
           </form>
         ) : (
           !done && (
             <div className="flex gap-2">
               <form action={passStage.bind(null, app.id, app.stage)} className="flex-1">
-                <button className="h-11 w-full rounded-2xl bg-primary font-display text-[15px] text-on-primary">
+                <PendingButton pendingText="기록 중..." className="h-11 w-full rounded-2xl bg-primary font-display text-[15px] text-on-primary">
                   {app.stage === "planned" ? "지원 완료!" : "다음 단계 통과"}
-                </button>
+                </PendingButton>
               </form>
               <form action={markFailed.bind(null, app.id, app.stage)}>
-                <button className="h-11 rounded-2xl border-2 border-line px-4 font-display text-[15px] text-muted">
+                <PendingButton pendingText="기록 중" className="h-11 rounded-2xl border-2 border-line px-4 font-display text-[15px] text-muted">
                   불합격 기록
-                </button>
+                </PendingButton>
               </form>
             </div>
           )
@@ -152,7 +153,7 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
               </option>
             ))}
           </select>
-          <button className="h-10 rounded-xl bg-soft px-3">변경</button>
+          <PendingButton pendingText="변경 중" className="h-10 rounded-xl bg-soft px-3">변경</PendingButton>
         </form>
       </section>
 
@@ -186,11 +187,15 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
           <p className="text-xs text-muted">전형 절차: {app.process.join(" → ")}</p>
         )}
         <form action={reanalyze.bind(null, app.id)}>
-          <button className="h-10 w-full rounded-xl border-2 border-line text-sm text-muted active:opacity-60">
+          <PendingButton
+            pendingText="햄스터가 공고를 다시 읽는 중... (10~20초)"
+            className="h-10 w-full rounded-xl border-2 border-line text-sm text-muted"
+          >
             AI로 다시 분석하기
-          </button>
+          </PendingButton>
         </form>
         {reerr && <p className="text-xs text-fail">다시 분석하지 못했어요. 잠시 후 다시 시도해 주세요.</p>}
+        {reok && <p className="text-xs text-good">다시 분석했어요! 위 내용이 새로 바뀌었어요.</p>}
         {app.source_url && (
           <a href={app.source_url} target="_blank" rel="noreferrer" className="text-sm text-info underline underline-offset-2">
             원문 공고 보기
@@ -210,11 +215,11 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
           placeholder="면접 일정, 느낀 점, 떨어진 이유 등을 적어두세요"
           className="rounded-xl border-2 border-line bg-bg p-3 text-[13px]"
         />
-        <button className="h-10 self-end rounded-xl bg-soft px-4 text-sm">메모 저장</button>
+        <PendingButton pendingText="저장 중" className="h-10 self-end rounded-xl bg-soft px-4 text-sm">메모 저장</PendingButton>
       </form>
 
       <form action={deleteApplication.bind(null, app.id)} className="self-center">
-        <button className="min-h-11 px-2 text-xs text-muted underline underline-offset-2">이 공고 삭제</button>
+        <PendingButton pendingText="삭제 중" className="min-h-11 px-2 text-xs text-muted underline underline-offset-2">이 공고 삭제</PendingButton>
       </form>
     </main>
   );

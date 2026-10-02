@@ -139,5 +139,5 @@ export async function reanalyze(id: string) {
   }
 
   revalidatePath(`/applications/${id}`);
-  redirect(ok ? `/applications/${id}` : `/applications/${id}?reerr=1`);
+  redirect(ok ? `/applications/${id}?reok=1` : `/applications/${id}?reerr=1`);
 }
