@@ -166,6 +166,7 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
           />
         </div>
         {app.summary && <p className="text-[13px] leading-relaxed">{app.summary}</p>}
+        <List title="주요 업무" items={app.duties ?? []} />
         <List title="자격요건" items={app.requirements} />
         {app.preferred.length > 0 && (
           <div className="flex flex-col gap-1.5">
