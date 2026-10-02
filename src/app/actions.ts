@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
-import { fetchPostingText, parseJobPosting } from "@/lib/parse-job";
+import { fetchPosting, parseJobPosting } from "@/lib/parse-job";
 import { STAGES, type StageKey } from "@/lib/types";
 
 export type AddState = { error?: string } | null;
@@ -21,8 +21,9 @@ export async function addApplication(_prev: AddState, formData: FormData): Promi
 
   let id: string;
   try {
-    const text = pasted || (await fetchPostingText(url));
-    const job = await parseJobPosting(text, url || undefined);
+    const posting = pasted ? { text: pasted, images: [] } : await fetchPosting(url);
+    const text = posting.text;
+    const job = await parseJobPosting(text, url || undefined, posting.images);
 
     const { data, error } = await supabase
       .from("applications")
