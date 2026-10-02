@@ -22,6 +22,7 @@
    - Authentication > URL Configuration
      - Site URL: `http://localhost:3000` (배포 후엔 배포 주소)
      - Redirect URLs 에 `http://localhost:3000/auth/callback` 추가
+   - (구글 로그인) 아래 "구글 로그인 설정" 참고
 3. 환경변수
    ```bash
    cp .env.example .env.local
@@ -32,6 +33,17 @@
    npm run dev
    ```
    http://localhost:3000 접속 → 이메일로 로그인 링크 받기
+
+## 구글 로그인 설정
+
+1. [Google Cloud Console](https://console.cloud.google.com) > 새 프로젝트 만들기
+2. API 및 서비스 > OAuth 동의 화면: 외부(External), 앱 이름 "잡로그", 이메일 입력 후 저장
+3. 사용자 인증 정보 > 사용자 인증 정보 만들기 > OAuth 클라이언트 ID
+   - 유형: 웹 애플리케이션
+   - 승인된 리디렉션 URI: Supabase 대시보드 > Authentication > Sign In / Providers > Google 에 표시된
+     Callback URL (`https://<프로젝트>.supabase.co/auth/v1/callback`)
+4. 발급된 클라이언트 ID / 보안 비밀을 Supabase 의 Google 프로바이더에 붙여넣고 Enable
+5. 앱 코드는 이미 연결돼 있음 (로그인 화면의 "Google로 계속하기")
 
 ## 폴더 구조
 
