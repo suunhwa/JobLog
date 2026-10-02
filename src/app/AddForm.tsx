@@ -2,8 +2,9 @@
 
 import { useActionState, useState } from "react";
 import { addApplication, type AddState } from "./actions";
+import { josa } from "@/lib/social";
 
-export function AddForm() {
+export function AddForm({ hamsterName = "햄찌" }: { hamsterName?: string }) {
   const [state, action, pending] = useActionState<AddState, FormData>(addApplication, null);
   const [mode, setMode] = useState<"url" | "text">("url");
 
@@ -57,7 +58,7 @@ export function AddForm() {
         </>
       )}
 
-      {pending && <p className="text-xs text-muted">햄스터가 공고를 읽고 있어요. 10초 정도 걸려요.</p>}
+      {pending && <p className="text-xs text-muted">{josa(hamsterName, "이가", "가")} 공고를 읽고 있어요. 10초 정도 걸려요.</p>}
       {state?.error && <p className="text-sm text-fail">{state.error}</p>}
     </form>
   );

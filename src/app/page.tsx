@@ -93,7 +93,7 @@ export default async function Home() {
           </Link>
         )}
 
-        <AddForm />
+        <AddForm hamsterName={hamster} />
 
         <StatCards applied={applied} doc={docPassed} interview={interviews} />
 

@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Hamster } from "@/components/mascot/Hamster";
 import { StatusChip } from "@/components/StatusChip";
 import { getUser } from "@/lib/supabase/server";
+import { DEFAULT_PROFILE, getMyProfile, josa } from "@/lib/social";
 import { cheekLevel } from "@/lib/progress";
 import { STAGES, daysLeft, stageIndex, stageLabel, type Application } from "@/lib/types";
 import {
@@ -25,7 +26,11 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
   if (!data) notFound();
   const app = data as Application;
 
-  const { count } = await supabase.from("applications").select("id", { count: "exact", head: true });
+  const [{ count }, profile] = await Promise.all([
+    supabase.from("applications").select("id", { count: "exact", head: true }),
+    getMyProfile(supabase, user.id),
+  ]);
+  const hamster = profile?.hamster_name ?? DEFAULT_PROFILE.hamster_name;
   const total = count ?? 0;
 
   const current = stageIndex(app.stage);
@@ -34,11 +39,11 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
   const d = daysLeft(app.deadline);
 
   const reaction = isNew
-    ? { title: "해바라기씨 하나 냠!", body: total % 10 === 0 ? "볼이 꽉 차서 집에 저장했어요. 새 가구 확인해 봐요!" : `볼 속 씨앗 ${total % 10}개째예요.` }
+    ? { title: `${josa(hamster, "이가", "가")} 해바라기씨 하나 냠!`, body: total % 10 === 0 ? "볼이 꽉 차서 집에 저장했어요. 새 가구 확인해 봐요!" : `볼 속 씨앗 ${total % 10}개째예요.` }
     : failed
       ? { title: "괜찮아, 토닥토닥", body: "어떤 결과든 경험은 남으니까요. 다음 공고로 가봐요." }
       : done
-        ? { title: "최종 합격 축하해요!", body: "햄스터가 정장 입고 출근 준비 중이에요." }
+        ? { title: "최종 합격 축하해요!", body: `${josa(hamster, "이가", "가")} 정장 입고 출근 준비 중이에요.` }
         : current >= stageIndex("doc_passed")
           ? { title: `${stageLabel(app.stage)}까지 왔어요!`, body: "다음 전형도 같이 준비해봐요." }
           : null;
