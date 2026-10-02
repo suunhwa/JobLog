@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Hamster } from "@/components/mascot/Hamster";
 import { signInWithGoogle } from "./actions";
 import { LoginForm } from "./LoginForm";
@@ -30,6 +31,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       <LoginForm />
 
       {error && <p className="text-sm text-fail">로그인에 실패했어요. 다시 시도해 주세요.</p>}
+
+      <p className="text-xs text-muted">
+        <Link href="/terms" className="underline underline-offset-2">이용약관</Link>
+        {" · "}
+        <Link href="/privacy" className="underline underline-offset-2">개인정보처리방침</Link>
+      </p>
     </main>
   );
 }
