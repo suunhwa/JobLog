@@ -8,7 +8,7 @@
 
 - Next.js 16 (App Router) + Tailwind CSS 4
 - Supabase (로그인, DB)
-- Claude API (공고 분석) + Jina Reader (공고 페이지 읽기)
+- Gemini API 무료 등급 또는 Claude API (공고 분석) + Jina Reader (공고 페이지 읽기)
 - PWA (아이폰 사파리 → 공유 → 홈 화면에 추가)
 
 ## 처음 세팅
@@ -27,7 +27,7 @@
    ```bash
    cp .env.example .env.local
    ```
-   `.env.local` 에 Supabase URL/키, Anthropic API 키 입력
+   `.env.local` 에 Supabase URL/키, Gemini API 키(무료, https://aistudio.google.com/apikey) 입력
 4. 실행
    ```bash
    npm run dev
