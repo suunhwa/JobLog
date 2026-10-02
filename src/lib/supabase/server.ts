@@ -26,8 +26,8 @@ export async function createClient() {
 /** 로그인한 사용자와 클라이언트를 함께 반환. 비로그인이면 user = null */
 export async function getUser() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  const user = claims ? { id: claims.sub, email: typeof claims.email === "string" ? claims.email : undefined } : null;
   return { supabase, user };
 }

@@ -4,7 +4,7 @@ type Tab = "home" | "house";
 
 export function BottomNav({ active }: { active: Tab }) {
   const item = (tab: Tab) =>
-    `flex min-h-11 flex-col items-center justify-center gap-0.5 text-[11px] ${
+    `flex min-h-12 flex-col items-center justify-center gap-0.5 text-[11px] transition active:scale-90 active:opacity-60 ${
       active === tab ? "font-bold text-ink" : "text-muted"
     }`;
 
