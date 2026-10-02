@@ -71,3 +71,11 @@ create policy "own applications" on public.applications
 drop policy if exists "own stage events" on public.stage_events;
 create policy "own stage events" on public.stage_events
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Data API 권한: 로그인한 사용자(authenticated)만 접근
+-- ("Automatically expose new tables" 를 꺼도 동작하도록 명시적으로 부여)
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on public.applications to authenticated;
+grant select, insert, update, delete on public.stage_events to authenticated;
+revoke all on public.applications from anon;
+revoke all on public.stage_events from anon;
