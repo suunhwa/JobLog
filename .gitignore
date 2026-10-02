@@ -42,3 +42,8 @@ next-env.d.ts
 
 # 예시 env 파일은 커밋
 !.env.example
+
+# IDE
+.idea/
+.vscode/
+Thumbs.db
