@@ -1,0 +1,61 @@
+import { redirect } from "next/navigation";
+import { BottomNav } from "@/components/BottomNav";
+import { Hamster } from "@/components/mascot/Hamster";
+import { FURNITURE, progressInfo } from "@/lib/progress";
+import { getUser } from "@/lib/supabase/server";
+import { signOut } from "@/app/actions";
+
+export const metadata = { title: "햄스터 집 · 잡로그" };
+
+export default async function HousePage() {
+  const { supabase, user } = await getUser();
+  if (!user) redirect("/login");
+
+  const { count } = await supabase.from("applications").select("id", { count: "exact", head: true });
+  const p = progressInfo(count ?? 0);
+
+  return (
+    <>
+      <main className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pb-28 pt-6">
+        <h1 className="font-display text-[26px]">햄스터 집</h1>
+
+        <section className="flex flex-col items-center gap-2 rounded-[28px] bg-soft px-5 py-6 text-center">
+          <Hamster cheek={p.cheek} mood={p.unlocked.length > 0 ? "happy" : "normal"} size={140} />
+          <p className="font-display text-xl">해바라기씨 {p.count}개 저장 중</p>
+          <p className="text-sm text-muted">
+            {p.next ? `${p.next.name}까지 ${p.remaining}개 남았어요` : "모든 가구를 모았어요!"}
+          </p>
+        </section>
+
+        <section className="flex flex-col gap-2">
+          <h2 className="font-display text-base">가구 모음</h2>
+          {FURNITURE.map((f) => {
+            const open = p.count >= f.at;
+            return (
+              <div key={f.at} className={`card flex items-center gap-3 px-4 py-3 ${open ? "" : "opacity-60"}`}>
+                <span
+                  className={`flex size-11 shrink-0 items-center justify-center rounded-2xl font-display text-sm ${
+                    open ? "bg-good-bg text-good" : "bg-shadow text-muted"
+                  }`}
+                >
+                  {f.at}
+                </span>
+                <span className="flex-1 text-[15px]">{open ? f.name : "???"}</span>
+                <span className="text-xs text-muted">{open ? "획득" : `${f.at}개 달성 시`}</span>
+              </div>
+            );
+          })}
+        </section>
+
+        <p className="text-center text-xs text-muted">
+          가구 일러스트는 곧 추가될 예정이에요.
+        </p>
+
+        <form action={signOut} className="self-center">
+          <button className="min-h-11 px-2 text-xs text-muted underline underline-offset-2">로그아웃</button>
+        </form>
+      </main>
+      <BottomNav active="house" />
+    </>
+  );
+}

@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+/*
+ * 테마 토큰
+ * 새 동물 테마를 추가할 때는 [data-theme="이름"] 블록만 하나 더 만들면 돼요.
+ * (src/themes/index.ts 에도 등록)
+ */
+:root,
+[data-theme="hamster"] {
+  --bg: #fffcf7;
+  --surface: #ffffff;
+  --soft: #fcebd8;       /* 히어로 카드 등 */
+  --soft-strong: #ffe3b8;
+  --line: #ffd9b0;       /* 입력창 테두리 */
+  --shadow: #f7e6d2;
+  --primary: #f2a65a;    /* 버튼 */
+  --on-primary: #2e2a1f;
+  --ink: #2e2a1f;
+  --muted: #5e4a36;
+  --accent-ink: #9a5212;
+
+  --good-bg: #ddf5d4;
+  --good: #2f6b22;
+  --info-bg: #d6eeff;
+  --info: #1d5f8c;
+  --warn-bg: #ffebd6;
+  --warn: #8a4a10;
+  --fail-bg: #ffe1e6;
+  --fail: #b0284a;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-soft: var(--soft);
+  --color-soft-strong: var(--soft-strong);
+  --color-line: var(--line);
+  --color-shadow: var(--shadow);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent-ink: var(--accent-ink);
+  --color-good-bg: var(--good-bg);
+  --color-good: var(--good);
+  --color-info-bg: var(--info-bg);
+  --color-info: var(--info);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn: var(--warn);
+  --color-fail-bg: var(--fail-bg);
+  --color-fail: var(--fail);
+
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-display: var(--font-jua), var(--font-body), sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 0 var(--shadow);
+}
