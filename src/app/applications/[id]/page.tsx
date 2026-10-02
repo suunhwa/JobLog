@@ -162,7 +162,7 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
         <div className="flex items-center justify-between">
           <h2 className="font-display text-base">AI 공고 분석</h2>
           <form action={reanalyze.bind(null, app.id)}>
-            <RefreshButton label="AI로 다시 분석하기" />
+            <RefreshButton label="AI로 다시 분석하기" hamsterName={hamster} />
           </form>
         </div>
         {reerr && <p className="text-xs text-fail">다시 분석하지 못했어요. 잠시 후 다시 시도해 주세요.</p>}

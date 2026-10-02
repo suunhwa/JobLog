@@ -1,13 +1,14 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { josa } from "@/lib/social";
 
 /** 아이콘만 있는 "다시 분석" 버튼. 누르면 아이콘이 돌고 옆에 "분석 중" 표시 */
-export function RefreshButton({ label }: { label: string }) {
+export function RefreshButton({ label, hamsterName = "햄찌" }: { label: string; hamsterName?: string }) {
   const { pending } = useFormStatus();
   return (
     <span className="flex items-center gap-1.5">
-      {pending && <span className="text-xs text-muted">다시 읽는 중...</span>}
+      {pending && <span className="text-xs text-muted">{josa(hamsterName, "이가", "가")} 다시 읽는 중...</span>}
       <button
         disabled={pending}
         aria-label={label}
