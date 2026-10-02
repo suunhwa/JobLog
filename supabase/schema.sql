@@ -30,6 +30,9 @@ create table if not exists public.applications (
   status text not null default 'active'
     check (status in ('active', 'passed', 'failed')),
   memo text not null default '',
+  steps text[],                              -- 이 공고의 전형 단계 (지원 예정 ~ 최종 합격)
+  step int not null default 0,               -- 지금 단계 번호
+  steps_custom boolean not null default false, -- 사용자가 직접 수정했는지
 
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

@@ -17,7 +17,7 @@ export default async function Home() {
   const [{ data }, profile, { data: unseen }] = await Promise.all([
     supabase
       .from("applications")
-      .select("id, company, position, experience, deadline, stage, status, created_at")
+      .select("id, company, position, experience, deadline, stage, status, steps, step, process, created_at")
       .order("created_at", { ascending: false }),
     getMyProfile(supabase, user.id),
     supabase
@@ -32,7 +32,7 @@ export default async function Home() {
   ];
   const apps = (data ?? []) as Pick<
     Application,
-    "id" | "company" | "position" | "experience" | "deadline" | "stage" | "status" | "created_at"
+    "id" | "company" | "position" | "experience" | "deadline" | "stage" | "status" | "steps" | "step" | "process" | "created_at"
   >[];
 
   const progress = progressInfo(apps.length);

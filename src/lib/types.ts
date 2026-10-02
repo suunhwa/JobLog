@@ -29,6 +29,9 @@ export type Application = {
   location: string | null;
   salary: string | null;
   channel: string | null;
+  steps: string[] | null;
+  step: number | null;
+  steps_custom: boolean | null;
   deadline: string | null;
   duties: string[] | null;
   requirements: string[];

@@ -203,7 +203,7 @@ const inputSchema = {
     duties: { type: "array", items: { type: "string" }, description: "주요 업무 / 담당 업무. 한 줄씩 짧게" },
     requirements: { type: "array", items: { type: "string" }, description: "자격요건. 한 줄씩 짧게 요약" },
     preferred: { type: "array", items: { type: "string" }, description: "우대사항. 짧은 키워드형으로" },
-    process: { type: "array", items: { type: "string" }, description: '전형 절차 순서. 예: ["서류", "코딩테스트", "1차 면접", "최종 면접"]' },
+    process: { type: "array", items: { type: "string" }, description: '전형 절차 단계 이름을 순서대로. 지원서 접수와 최종 합격은 빼고 짧게. 예: ["서류 전형", "코딩테스트", "1차 면접", "최종 면접"]' },
     summary: { type: ["string", "null"], description: "주요 업무 한두 문장 요약" },
   },
   required: [
@@ -290,7 +290,7 @@ async function parseWithGemini(text: string, url?: string, images: PostingImage[
               duties: { ...stringList, description: "주요 업무 / 담당 업무. 한 줄씩 짧게" },
               requirements: { ...stringList, description: "자격요건. 한 줄씩 짧게" },
               preferred: { ...stringList, description: "우대사항. 짧은 키워드형" },
-              process: { ...stringList, description: "전형 절차 순서" },
+              process: { ...stringList, description: '전형 절차 단계 이름을 순서대로. 지원서 접수와 최종 합격은 빼고 짧게. 예: ["서류 전형", "코딩테스트", "1차 면접", "최종 면접"]' },
               summary: { ...nullableString, description: "주요 업무 한두 문장 요약" },
             },
             required: ["company", "duties", "requirements", "preferred", "process"],

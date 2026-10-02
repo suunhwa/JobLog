@@ -24,6 +24,7 @@
    - 이어서 `supabase/04_push.sql` 도 실행 (휴대폰 알림)
    - 이어서 `supabase/05_salary.sql` 도 실행 (급여 칸)
    - 이어서 `supabase/06_channel.sql` 도 실행 (지원 경로 칸)
+   - 이어서 `supabase/07_steps.sql` 도 실행 (공고별 전형 단계)
    - Authentication > URL Configuration
      - Site URL: `http://localhost:3000` (배포 후엔 배포 주소)
      - Redirect URLs 에 `http://localhost:3000/auth/callback` 추가

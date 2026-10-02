@@ -9,15 +9,17 @@ import { detectChannel } from "@/lib/channel";
 import { getUser } from "@/lib/supabase/server";
 import { DEFAULT_PROFILE, getMyProfile, josa } from "@/lib/social";
 import { cheekLevel } from "@/lib/progress";
-import { STAGES, daysLeft, stageIndex, stageLabel, type Application } from "@/lib/types";
+import { daysLeft, stageIndex, type Application } from "@/lib/types";
+import { resolveSteps } from "@/lib/steps";
 import {
   deleteApplication,
   reanalyze,
   markFailed,
-  passStage,
+  passStep,
   reopen,
+  saveSteps,
   saveMemo,
-  setStageFromForm,
+  setStepFromForm,
 } from "@/app/actions";
 
 export default async function ApplicationPage({ params, searchParams }: PageProps<"/applications/[id]">) {
@@ -38,9 +40,9 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
   const hamster = profile?.hamster_name ?? DEFAULT_PROFILE.hamster_name;
   const total = count ?? 0;
 
-  const current = stageIndex(app.stage);
+  const { steps, step: current } = resolveSteps(app);
   const failed = app.status === "failed";
-  const done = app.stage === "offer";
+  const done = current === steps.length - 1;
   const d = daysLeft(app.deadline);
 
   const reaction = isNew
@@ -49,8 +51,8 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
       ? { title: "괜찮아, 토닥토닥", body: "어떤 결과든 경험은 남으니까요. 다음 공고로 가봐요." }
       : done
         ? { title: "최종 합격 축하해요!", body: `${josa(hamster, "이가", "가")} 정장 입고 출근 준비 중이에요.` }
-        : current >= stageIndex("doc_passed")
-          ? { title: `${stageLabel(app.stage)}까지 왔어요!`, body: "다음 전형도 같이 준비해봐요." }
+        : current >= 2 || stageIndex(app.stage) >= stageIndex("doc_passed")
+          ? { title: `${steps[current]}까지 왔어요!`, body: "다음 전형도 같이 준비해봐요." }
           : null;
 
   return (
@@ -87,12 +89,12 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
 
       <section className="card flex flex-col gap-3.5 p-4">
         <h2 className="font-display text-base">전형 진행</h2>
-        <ol className="flex items-start">
-          {STAGES.map((s, i) => {
+        <ol className="-mx-1 flex items-start overflow-x-auto px-1 pb-1">
+          {steps.map((label, i) => {
             const passed = i < current || (i === current && done);
             const here = i === current && !done;
             return (
-              <li key={s.key} className="flex flex-1 flex-col items-center gap-1.5">
+              <li key={`${i}-${label}`} className="flex min-w-[52px] flex-1 flex-col items-center gap-1.5">
                 <div className="flex w-full items-center">
                   <div className={`h-[3px] flex-1 ${i === 0 ? "invisible" : i <= current ? "bg-good" : "bg-line"}`} />
                   <div
@@ -112,10 +114,10 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
                       </svg>
                     )}
                   </div>
-                  <div className={`h-[3px] flex-1 ${i === STAGES.length - 1 ? "invisible" : i < current ? "bg-good" : "bg-line"}`} />
+                  <div className={`h-[3px] flex-1 ${i === steps.length - 1 ? "invisible" : i < current ? "bg-good" : "bg-line"}`} />
                 </div>
-                <span className={`text-center text-[10px] leading-tight ${here ? "font-bold text-accent-ink" : "text-muted"}`}>
-                  {s.label}
+                <span className={`break-keep px-0.5 text-center text-[10px] leading-tight ${here ? "font-bold text-accent-ink" : "text-muted"}`}>
+                  {label}
                 </span>
               </li>
             );
@@ -123,7 +125,7 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
         </ol>
 
         {failed ? (
-          <form action={reopen.bind(null, app.id, app.stage)}>
+          <form action={reopen.bind(null, app.id)}>
             <PendingButton pendingText="되돌리는 중..." className="h-11 w-full rounded-2xl border-2 border-line font-display text-[15px] text-muted">
               불합격 취소 (다시 진행 중으로)
             </PendingButton>
@@ -131,12 +133,12 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
         ) : (
           !done && (
             <div className="flex gap-2">
-              <form action={passStage.bind(null, app.id, app.stage)} className="flex-1">
+              <form action={passStep.bind(null, app.id)} className="flex-1">
                 <PendingButton pendingText="기록 중..." className="h-11 w-full rounded-2xl bg-primary font-display text-[15px] text-on-primary">
-                  {app.stage === "planned" ? "지원 완료!" : "다음 단계 통과"}
+                  {current === 0 ? "지원 완료!" : `${steps[current]} 통과`}
                 </PendingButton>
               </form>
-              <form action={markFailed.bind(null, app.id, app.stage)}>
+              <form action={markFailed.bind(null, app.id)}>
                 <PendingButton pendingText="기록 중" className="h-11 rounded-2xl border-2 border-line px-4 font-display text-[15px] text-muted">
                   불합격 기록
                 </PendingButton>
@@ -145,19 +147,40 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
           )
         )}
 
-        <form action={setStageFromForm.bind(null, app.id)} className="flex items-center gap-2 text-sm">
-          <label htmlFor="stage" className="shrink-0 text-muted">
+        <form action={setStepFromForm.bind(null, app.id)} className="flex items-center gap-2 text-sm">
+          <label htmlFor="step" className="shrink-0 text-muted">
             단계 직접 선택
           </label>
-          <select id="stage" name="stage" defaultValue={app.stage} className="h-10 min-w-0 flex-1 rounded-xl border-2 border-line bg-surface px-2">
-            {STAGES.map((s) => (
-              <option key={s.key} value={s.key}>
-                {s.label}
+          <select id="step" name="step" defaultValue={current} className="h-10 min-w-0 flex-1 rounded-xl border-2 border-line bg-surface px-2">
+            {steps.map((label, i) => (
+              <option key={`${i}-${label}`} value={i}>
+                {label}
               </option>
             ))}
           </select>
           <PendingButton pendingText="변경 중" className="h-10 rounded-xl bg-soft px-3">변경</PendingButton>
         </form>
+
+        <details className="text-sm">
+          <summary className="cursor-pointer text-xs text-muted underline underline-offset-2">
+            전형 단계가 공고랑 달라요 (직접 수정)
+          </summary>
+          <form action={saveSteps.bind(null, app.id)} className="mt-2 flex flex-col gap-2">
+            <label htmlFor="steps-edit" className="text-xs text-muted">
+              &apos;지원 예정&apos;과 &apos;최종 합격&apos; 사이 단계를 쉼표로 구분해서 적어 주세요
+            </label>
+            <input
+              id="steps-edit"
+              name="steps"
+              defaultValue={steps.slice(1, -1).join(", ")}
+              placeholder="서류 전형, 코딩테스트, 1차 면접, 최종 면접"
+              className="h-11 rounded-xl border-2 border-line bg-bg px-3 text-sm"
+            />
+            <PendingButton pendingText="저장 중" className="h-10 self-end rounded-xl bg-soft px-4 text-sm">
+              단계 저장
+            </PendingButton>
+          </form>
+        </details>
       </section>
 
       <section className="card flex flex-col gap-3 p-4">
