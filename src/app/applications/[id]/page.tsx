@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Hamster } from "@/components/mascot/Hamster";
 import { StatusChip } from "@/components/StatusChip";
 import { PendingButton } from "@/components/PendingButton";
+import { RefreshButton } from "@/components/RefreshButton";
 import { getUser } from "@/lib/supabase/server";
 import { DEFAULT_PROFILE, getMyProfile, josa } from "@/lib/social";
 import { cheekLevel } from "@/lib/progress";
@@ -158,7 +159,14 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
       </section>
 
       <section className="card flex flex-col gap-3 p-4">
-        <h2 className="font-display text-base">AI 공고 분석</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-base">AI 공고 분석</h2>
+          <form action={reanalyze.bind(null, app.id)}>
+            <RefreshButton label="AI로 다시 분석하기" />
+          </form>
+        </div>
+        {reerr && <p className="text-xs text-fail">다시 분석하지 못했어요. 잠시 후 다시 시도해 주세요.</p>}
+        {reok && <p className="text-xs text-good">다시 분석했어요!</p>}
         <div className="grid grid-cols-2 gap-2">
           <Field label="경력" value={app.experience} />
           <Field label="고용형태" value={app.employment_type} />
@@ -186,16 +194,6 @@ export default async function ApplicationPage({ params, searchParams }: PageProp
         {app.process.length > 0 && (
           <p className="text-xs text-muted">전형 절차: {app.process.join(" → ")}</p>
         )}
-        <form action={reanalyze.bind(null, app.id)}>
-          <PendingButton
-            pendingText="햄스터가 공고를 다시 읽는 중... (10~20초)"
-            className="h-10 w-full rounded-xl border-2 border-line text-sm text-muted"
-          >
-            AI로 다시 분석하기
-          </PendingButton>
-        </form>
-        {reerr && <p className="text-xs text-fail">다시 분석하지 못했어요. 잠시 후 다시 시도해 주세요.</p>}
-        {reok && <p className="text-xs text-good">다시 분석했어요! 위 내용이 새로 바뀌었어요.</p>}
         {app.source_url && (
           <a href={app.source_url} target="_blank" rel="noreferrer" className="text-sm text-info underline underline-offset-2">
             원문 공고 보기
@@ -238,7 +236,7 @@ function List({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="flex flex-col gap-1.5">
       <h3 className="text-[13px] font-bold">{title}</h3>
-      {items.length === 0 && <p className="text-xs text-muted">공고에서 찾지 못했어요. 아래 &apos;다시 분석하기&apos;를 눌러 보세요.</p>}
+      {items.length === 0 && <p className="text-xs text-muted">공고에서 찾지 못했어요. 오른쪽 위 새로고침 버튼으로 다시 분석해 보세요.</p>}
       <ul className="flex flex-col gap-1">
         {items.map((t) => (
           <li key={t} className="flex items-start gap-2 text-[13px] leading-relaxed">
