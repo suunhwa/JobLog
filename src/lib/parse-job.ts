@@ -244,11 +244,10 @@ export async function parseJobPosting(text: string, url?: string, images: Postin
 
 /** Google Gemini API (무료 등급 사용 가능) */
 async function parseWithGemini(text: string, url?: string, images: PostingImage[] = []): Promise<ParsedJob> {
-  const model = process.env.GEMINI_MODEL || "gemini-flash-latest";
   const nullableString = { type: "STRING", nullable: true };
   const stringList = { type: "ARRAY", items: { type: "STRING" } };
 
-  const res = await fetch(
+  const callModel = (model: string) => fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
     {
       method: "POST",
@@ -291,8 +290,31 @@ async function parseWithGemini(text: string, url?: string, images: PostingImage[
     },
   );
 
-  if (res.status === 429) throw new Error("오늘 무료 AI 사용량을 다 썼어요. 잠시 후 다시 시도해 주세요.");
-  if (!res.ok) throw new Error(`AI 분석 요청이 실패했어요 (${res.status})`);
+  // 무료 등급은 서버가 바쁘면 503, 한도 초과면 429 를 줌 → 잠깐 쉬었다 재시도하고, 안 되면 가벼운 모델로 넘어감
+  const models = [process.env.GEMINI_MODEL || "gemini-flash-latest", "gemini-flash-lite-latest"];
+  let res: Response | null = null;
+  let quota = false;
+  outer: for (const model of models) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      res = await callModel(model);
+      if (res.ok) break outer;
+      if (res.status === 429) {
+        quota = true;
+        break; // 다음 모델로
+      }
+      if (res.status >= 500) {
+        await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+        continue;
+      }
+      break outer; // 400 등은 재시도해도 같음
+    }
+  }
+
+  if (!res || !res.ok) {
+    if (quota && res?.status === 429) throw new Error("오늘 무료 AI 사용량을 다 썼어요. 내일 다시 시도해 주세요.");
+    if (res && res.status >= 500) throw new Error("AI 서버가 지금 붐벼요. 잠시 후 다시 시도해 주세요.");
+    throw new Error(`AI 분석 요청이 실패했어요 (${res?.status ?? "네트워크"})`);
+  }
 
   const data = await res.json();
   const out: string | undefined = data?.candidates?.[0]?.content?.parts?.[0]?.text;

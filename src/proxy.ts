@@ -32,7 +32,12 @@ export async function proxy(request: NextRequest) {
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    url.search = "";
+    const redirect = NextResponse.redirect(url);
+    if (path.startsWith("/invite/")) {
+      redirect.cookies.set("jl_next", path, { maxAge: 60 * 30, path: "/", sameSite: "lax" });
+    }
+    return redirect;
   }
 
   return response;

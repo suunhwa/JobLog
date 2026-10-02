@@ -3,6 +3,8 @@ import { BottomNav } from "@/components/BottomNav";
 import { Hamster } from "@/components/mascot/Hamster";
 import { FURNITURE, progressInfo } from "@/lib/progress";
 import { getUser } from "@/lib/supabase/server";
+import { getMyProfile } from "@/lib/social";
+import { ProfileForm } from "@/components/social/ProfileForm";
 import { signOut } from "@/app/actions";
 
 export const metadata = { title: "햄스터 집 · 잡로그" };
@@ -11,7 +13,10 @@ export default async function HousePage() {
   const { supabase, user } = await getUser();
   if (!user) redirect("/login");
 
-  const { count } = await supabase.from("applications").select("id", { count: "exact", head: true });
+  const [{ count }, profile] = await Promise.all([
+    supabase.from("applications").select("id", { count: "exact", head: true }),
+    getMyProfile(supabase, user.id),
+  ]);
   const p = progressInfo(count ?? 0);
 
   return (
@@ -21,11 +26,15 @@ export default async function HousePage() {
 
         <section className="flex flex-col items-center gap-2 rounded-[28px] bg-soft px-5 py-6 text-center">
           <Hamster cheek={p.cheek} mood={p.unlocked.length > 0 ? "happy" : "normal"} size={140} />
-          <p className="font-display text-xl">해바라기씨 {p.count}개 저장 중</p>
+          <p className="font-display text-xl">
+            {profile ? `${profile.hamster_name}의 집` : "햄스터 집"} · 해바라기씨 {p.count}개
+          </p>
           <p className="text-sm text-muted">
             {p.next ? `${p.next.name}까지 ${p.remaining}개 남았어요` : "모든 가구를 모았어요!"}
           </p>
         </section>
+
+        {profile && <ProfileForm nickname={profile.nickname} hamsterName={profile.hamster_name} />}
 
         <section className="flex flex-col gap-2">
           <h2 className="font-display text-base">가구 모음</h2>

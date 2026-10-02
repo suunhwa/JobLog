@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { StatusChip } from "@/components/StatusChip";
 import { StatCards } from "@/components/StatCards";
 import { getUser } from "@/lib/supabase/server";
+import { DEFAULT_PROFILE, getMyProfile, josa } from "@/lib/social";
 import { cheekMessage, progressInfo } from "@/lib/progress";
 import { daysLeft, stageIndex, type Application } from "@/lib/types";
 import { AddForm } from "./AddForm";
@@ -13,10 +14,22 @@ export default async function Home() {
   const { supabase, user } = await getUser();
   if (!user) redirect("/login");
 
-  const { data } = await supabase
-    .from("applications")
-    .select("id, company, position, experience, deadline, stage, status, created_at")
-    .order("created_at", { ascending: false });
+  const [{ data }, profile, { data: unseen }] = await Promise.all([
+    supabase
+      .from("applications")
+      .select("id, company, position, experience, deadline, stage, status, created_at")
+      .order("created_at", { ascending: false }),
+    getMyProfile(supabase, user.id),
+    supabase
+      .from("gifts")
+      .select("id, sender:profiles!gifts_from_id_fkey(nickname)")
+      .eq("to_id", user.id)
+      .eq("seen", false)
+      .limit(20),
+  ]);
+  const visitors = [
+    ...new Set(((unseen ?? []) as unknown as { sender: { nickname: string } | null }[]).map((g) => g.sender?.nickname ?? "이웃")),
+  ];
   const apps = (data ?? []) as Pick<
     Application,
     "id" | "company" | "position" | "experience" | "deadline" | "stage" | "status" | "created_at"
@@ -33,7 +46,8 @@ export default async function Home() {
     .filter((a): a is typeof a & { d: number } => a.d !== null && a.d >= 0 && a.d <= 7)
     .sort((a, b) => a.d - b.d);
 
-  const name = user.email?.split("@")[0] ?? "";
+  const name = profile?.nickname ?? user.email?.split("@")[0] ?? DEFAULT_PROFILE.nickname;
+  const hamster = profile?.hamster_name ?? DEFAULT_PROFILE.hamster_name;
 
   return (
     <>
@@ -47,7 +61,9 @@ export default async function Home() {
             <p className="font-display text-xl leading-snug">
               {name}님,
               <br />
-              {progress.count === 0 ? "첫 공고를 담아봐요!" : `공고 ${progress.count}개 모았어요!`}
+              {progress.count === 0
+                ? `${josa(hamster, "이랑", "랑")} 첫 공고 담아봐요!`
+                : `${josa(hamster, "이가", "가")} 공고 ${progress.count}개 모았어요!`}
             </p>
             <p className="text-[13px] text-muted">{cheekMessage(progress.count)}</p>
             {progress.next && (
@@ -64,8 +80,18 @@ export default async function Home() {
               </div>
             )}
           </div>
-          <Hamster cheek={progress.cheek} mood={progress.justStored ? "happy" : "normal"} size={116} />
+          <Hamster cheek={progress.cheek} mood={progress.justStored ? "happy" : "normal"} seed size={92} />
         </section>
+
+        {visitors.length > 0 && (
+          <Link href="/friends" className="flex items-center gap-3 rounded-2xl border-2 border-[#F0D77A] bg-[#FFF8DC] px-4 py-3 active:opacity-70">
+            <Hamster cheek={1} mood="happy" size={40} />
+            <span className="flex-1 text-sm">
+              <b>{visitors.slice(0, 2).join(", ")}</b>
+              {visitors.length > 2 ? ` 외 ${visitors.length - 2}명이` : " 님이"} 놀러 왔다 갔어요!
+            </span>
+          </Link>
+        )}
 
         <AddForm />
 
