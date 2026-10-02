@@ -104,3 +104,40 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/login");
 }
+
+/** 저장된 공고를 AI로 다시 분석 (진행 단계·메모는 그대로) */
+export async function reanalyze(id: string) {
+  const { supabase, user } = await getUser();
+  if (!user) redirect("/login");
+
+  const { data: app } = await supabase
+    .from("applications")
+    .select("source_url, raw_text")
+    .eq("id", id)
+    .maybeSingle();
+  if (!app) redirect("/");
+
+  let ok = true;
+  try {
+    let posting = { text: app.raw_text ?? "", images: [] as Awaited<ReturnType<typeof fetchPosting>>["images"] };
+    if (app.source_url) {
+      try {
+        posting = await fetchPosting(app.source_url);
+      } catch {
+        // 링크를 못 읽으면 저장해둔 원문으로
+      }
+    }
+    if (!posting.text && posting.images.length === 0) throw new Error("원문이 없어요");
+    const job = await parseJobPosting(posting.text, app.source_url ?? undefined, posting.images);
+    const { error } = await supabase
+      .from("applications")
+      .update({ ...job, raw_text: posting.text.slice(0, 20_000) })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+  } catch {
+    ok = false;
+  }
+
+  revalidatePath(`/applications/${id}`);
+  redirect(ok ? `/applications/${id}` : `/applications/${id}?reerr=1`);
+}

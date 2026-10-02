@@ -224,6 +224,9 @@ function buildPrompt(text: string, url?: string, hasImages = false) {
   return `다음은 채용 공고 내용이야. 오늘 날짜는 ${today}.
 공고에 실제로 적힌 내용만 정리하고, 없는 정보는 null 이나 빈 배열로 둬. 한국어로 짧게 정리해줘.
 여러 포지션이 있으면 가장 대표적인 개발 직무 하나를 골라줘.
+duties(주요 업무)는 "담당업무 / 주요업무 / 업무내용 / 이런 일을 해요" 같은 부분에서,
+requirements(자격요건)는 "자격요건 / 지원자격 / 필수 / 이런 분을 찾아요" 같은 부분에서 뽑아줘.
+두 항목이 공고에 따로 나뉘어 있지 않아도, 하는 일은 duties 에, 지원자 조건은 requirements 에 나눠 담아줘.
 ${hasImages ? "공고 본문이 이미지로 첨부돼 있어. 이미지 속 글자도 읽어서 정리해줘.\n" : ""}${url ? `원본 링크: ${url}\n` : ""}
 <posting>
 ${text}
