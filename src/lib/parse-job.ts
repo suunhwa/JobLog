@@ -68,7 +68,7 @@ function imageUrls(html: string, base: string) {
   for (const m of html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) {
     const src = m[1];
     if (src.startsWith("data:")) continue;
-    if (/logo|icon|btn|button|blank|spacer|banner|sprite|common|badge/i.test(src)) continue;
+    if (/logo|icon|btn|button|blank|spacer|banner|sprite|common|badge|CoImage|CoPhoto|CoLogo/i.test(src)) continue;
     try {
       urls.push(new URL(src, base).toString());
     } catch {
@@ -109,14 +109,38 @@ async function downloadImage(url: string, referer: string): Promise<PostingImage
 }
 
 /** 사이트별로 실제 공고 본문이 있는 주소를 추가로 알려줌 */
-function detailUrls(url: string): string[] {
+function detailUrls(url: string, mainHtml = ""): string[] {
   const u = new URL(url);
+  const urls: string[] = [];
+
   // 사람인: 본문이 iframe(view-detail) 안에 있음
   if (u.hostname.endsWith("saramin.co.kr")) {
     const rec = u.searchParams.get("rec_idx");
-    if (rec) return [`https://www.saramin.co.kr/zf_user/jobs/relay/view-detail?rec_idx=${rec}&rec_seq=0`];
+    if (rec) urls.push(`https://www.saramin.co.kr/zf_user/jobs/relay/view-detail?rec_idx=${rec}&rec_seq=0`);
   }
-  return [];
+
+  // 게임잡 · 잡코리아: 담당업무/자격조건이 각각 따로 된 페이지에 있음
+  if (/(gamejob|jobkorea)\.co\.kr$/.test(u.hostname)) {
+    const gno = u.searchParams.get("GI_No") ?? u.pathname.match(/GI_Read\/(\d+)/i)?.[1] ?? u.pathname.match(/\/(\d{5,})/)?.[1];
+    if (gno) {
+      const origin = `${u.protocol}//${u.hostname}`;
+      urls.push(`${origin}/Recruit/GI_Read_Comt_Ifrm?gno=${gno}`);
+      urls.push(`${origin}/Recruit/GI_Read_GI_Comment_Ifrm?gno=${gno}`);
+    }
+  }
+
+  // 그 밖의 사이트: 같은 사이트 안의 iframe 이나 "...Ifrm" 링크를 본문 후보로
+  const site = u.hostname.split(".").slice(-2).join(".");
+  for (const m of mainHtml.matchAll(/<iframe[^>]+src=["']([^"']+)["']|href=["']([^"']*ifrm[^"']*)["']/gi)) {
+    try {
+      const abs = new URL((m[1] ?? m[2]).replace(/&amp;/g, "&"), url);
+      if (abs.hostname.endsWith(site) && !/(^|\/)(ads?|banner|login|map)([\/._-]|$)|youtube/i.test(abs.pathname)) urls.push(abs.toString());
+    } catch {
+      // 무시
+    }
+  }
+
+  return [...new Set(urls)].filter((x) => x !== url).slice(0, 4);
 }
 
 /** Jina Reader (JINA_API_KEY 가 있을 때만 사용) */
@@ -149,15 +173,17 @@ export async function fetchPosting(url: string): Promise<Posting> {
   }
 
   // 사이트별 "진짜 본문" 페이지 (사람인 iframe 등)
-  let detail: { html: string; base: string } | null = null;
-  for (const target of detailUrls(url)) {
+  // 본문 페이지들 (여러 개면 전부 읽어서 합침: 예) 담당업무 페이지 + 자격조건 페이지)
+  const details: { html: string; base: string }[] = [];
+  for (const target of detailUrls(url, mainHtml)) {
     try {
-      detail = { html: await getHtml(target, url), base: target };
-      break;
+      const html = await getHtml(target, url);
+      if (htmlToText(html).length > 10 || /<img/i.test(html)) details.push({ html, base: target });
     } catch (e) {
       lastError = e;
     }
   }
+  const detail = details.length > 0 ? { html: details.map((d) => d.html).join("\n"), base: details[0].base } : null;
 
   const title = mainHtml ? metaContent(mainHtml, "og:title") : "";
   const desc = mainHtml ? metaContent(mainHtml, "og:description") : "";
