@@ -16,7 +16,7 @@ type Pose = "stand" | "run" | "sleep";
 function MiniHamster({ x, y, scale = 1, pose = "stand" }: { x: number; y: number; scale?: number; pose?: Pose }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${scale})`}>
-      <g className={pose === "run" ? "jl-bob-fast" : "jl-breathe"}>
+      <g className={pose === "run" ? "jl-bob-fast" : pose === "stand" ? "jl-hop" : "jl-breathe"}>
       <circle cx={-13} cy={-15} r={6} fill="none" stroke={OUT} strokeWidth={4} />
       <circle cx={13} cy={-15} r={6} fill="none" stroke={OUT} strokeWidth={4} />
       <ellipse cx={0} cy={0} rx={21} ry={18} fill="none" stroke={OUT} strokeWidth={4} />

@@ -72,6 +72,7 @@ body {
 .jl-spin-slow,
 .jl-breathe,
 .jl-bob-fast,
+.jl-hop,
 .jl-blink,
 .jl-sway,
 .jl-z,
@@ -84,6 +85,7 @@ body {
 .jl-spin-slow { transform-origin: center; animation: jl-spin 6s linear infinite; }
 .jl-breathe { transform-origin: 50% 100%; animation: jl-breathe 2.8s ease-in-out infinite; }
 .jl-bob-fast { transform-origin: center; animation: jl-bob 0.35s ease-in-out infinite; }
+.jl-hop { transform-origin: 50% 100%; animation: jl-hop 3.2s ease-in-out infinite; }
 .jl-blink { transform-origin: center; animation: jl-blink 4.5s infinite; }
 .jl-sway { transform-origin: 50% 0%; animation: jl-sway 3.2s ease-in-out infinite; }
 .jl-z { animation: jl-z 2.4s ease-in-out infinite; }
@@ -96,6 +98,17 @@ body {
 @keyframes jl-spin { to { transform: rotate(360deg); } }
 @keyframes jl-breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.03, 0.97); } }
 @keyframes jl-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+/* 가만히 있을 때: 숨 쉬다가 가끔 콩콩 뛰고 갸웃 */
+@keyframes jl-hop {
+  0%, 40%, 100% { transform: translateY(0) scale(1, 1) rotate(0deg); }
+  20% { transform: translateY(0) scale(1.04, 0.96) rotate(0deg); }
+  50% { transform: translateY(0) scale(1.08, 0.9); }
+  58% { transform: translateY(-7px) scale(0.96, 1.05); }
+  66% { transform: translateY(0) scale(1.06, 0.94); }
+  74% { transform: translateY(-4px) scale(0.98, 1.02); }
+  82% { transform: translateY(0) scale(1, 1) rotate(-6deg); }
+  92% { transform: translateY(0) rotate(4deg); }
+}
 @keyframes jl-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
 @keyframes jl-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
 @keyframes jl-z { 0% { opacity: 0; transform: translate(0, 4px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(4px, -8px); } }
