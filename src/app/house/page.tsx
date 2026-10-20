@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
-import { Hamster } from "@/components/mascot/Hamster";
+import { HamsterRoom } from "@/components/mascot/HamsterRoom";
 import { FURNITURE, progressInfo } from "@/lib/progress";
 import { getUser } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/social";
@@ -25,8 +25,13 @@ export default async function HousePage() {
       <main className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pb-28 pt-6">
         <h1 className="font-display text-[26px]">햄스터 집</h1>
 
-        <section className="flex flex-col items-center gap-2 rounded-[28px] bg-soft px-5 py-6 text-center">
-          <Hamster cheek={p.cheek} mood={p.unlocked.length > 0 ? "happy" : "normal"} size={140} />
+        <section className="relative flex flex-col items-center gap-2 rounded-[28px] bg-soft p-3 pb-5 text-center">
+          {p.justStored && (
+            <span className="absolute left-5 top-5 z-[1] rounded-full bg-[#FFD43B] px-3 py-1 font-display text-xs text-ink shadow">
+              새 가구 도착!
+            </span>
+          )}
+          <HamsterRoom count={p.count} className="w-full rounded-2xl" />
           <p className="font-display text-xl">
             {profile ? `${profile.hamster_name}의 집` : "햄스터 집"} · 해바라기씨 {p.count}개
           </p>

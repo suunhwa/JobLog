@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Hamster } from "@/components/mascot/Hamster";
+import { HamsterRoom } from "@/components/mascot/HamsterRoom";
 import { GiftForm } from "@/components/social/GiftForm";
 import { progressInfo } from "@/lib/progress";
 import { GIFTS, josa, type GiftKind, type NeighborStats } from "@/lib/social";
@@ -47,8 +47,8 @@ export default async function FriendHousePage({ params }: PageProps<"/friends/[i
         <span className="font-display text-lg">{friend.nickname}네 햄스터 집</span>
       </div>
 
-      <section className="flex flex-col items-center gap-2 rounded-[28px] bg-soft px-5 py-6 text-center">
-        <Hamster cheek={p.cheek} mood={p.unlocked.length > 0 ? "happy" : "normal"} size={120} />
+      <section className="flex flex-col items-center gap-2 rounded-[28px] bg-soft p-3 pb-5 text-center">
+        <HamsterRoom count={friend.total} className="w-full rounded-2xl" />
         <p className="font-display text-xl">{josa(friend.hamster_name, "이가", "가")} 반겨줘요!</p>
         <p className="text-sm text-muted">
           해바라기씨 {friend.total}개 · 가구 {p.unlocked.length}개
